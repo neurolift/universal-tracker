@@ -30,6 +30,13 @@ class Portfolio:
         exists=any(a.symbol==self.assets_obj.symbol for a in self.assets)
         if not exists:
             self.assets.append(asset_obj)
-            print()
-
-
+            print(f"Added {asset_obj.name} ({asset_obj.symbol}) to portfolio.")
+        else:
+            print(f"Asset {asset_obj.symbol} is already in the portfolio")
+    def update_all_prices(self,fetcher_function):
+        '''This loops thorugh every assest and updtaes its price using your fetching logic'''
+        for asset in self.assets:
+            new_price=fetcher_function(asset.symbol)
+            asset.update_price(new_price)
+    def get_portfolio_data(self):
+        return [asset.to_dict() for asset in self.assets]
