@@ -8,23 +8,27 @@ load_dotenv(dotenv_path=os.path.join(os.path.dirname(__file__), "..", ".env"))
 api_key = os.getenv("GOLD_API_KEY")
 
 def get_stock_data(ticker_symbol):
-    stock=yf.Ticker(ticker_symbol)
-    raw_data=stock.info
-    clean_data = {
-    "symbol": raw_data.get("symbol"),
-    "name": raw_data.get("longName"),
-    "price": raw_data.get("currentPrice"),
-    "currency": raw_data.get("currency"),
-    "change": raw_data.get("regularMarketChangePercent")
-}
-    return clean_data
-print(get_stock_data("AMZN"))
+    try:
+        stock = yf.Ticker(ticker_symbol)
+        raw_data = stock.info
+        if not raw_data:
+            return None
+            
+        clean_data = {
+            "symbol": raw_data.get("symbol"),
+            "name": raw_data.get("longName"),
+            "price": raw_data.get("currentPrice") or raw_data.get("regularMarketPrice"),
+            "currency": raw_data.get("currency"),
+            "change": raw_data.get("regularMarketChangePercent")
+        }
+        return clean_data
+    except Exception as e:
+        print(f"Error fetching stock data for {ticker_symbol}: {e}")
+        return None
 
 
 def get_metal_data(symbol="XAU"):
-
     url = f"https://www.goldapi.io/api/{symbol}/USD"
-    
     headers = {
         "x-access-token": api_key,
         "Content-Type": "application/json"
@@ -33,25 +37,24 @@ def get_metal_data(symbol="XAU"):
     try:
         response = requests.get(url, headers=headers)
         response.raise_for_status()
-
-        result=response.json()
+        result = response.json()
+        
         return {
             "symbol": result.get("metal"),
-            "name": "Gold (24k)",
-            "price": result['price_gram_24k'], 
-            "currency": result['currency'],
+            "name": f"{result.get('metal')} (24k)",
+            "price": result.get('price_gram_24k'), 
+            "currency": result.get('currency'),
             "change": result.get("chp")
-                }
-    except requests.exceptions.RequestException as e:
-        print("Error:", str(e))
+        }
+    except Exception as e:
+        print(f"Error fetching metal data: {e}")
+        return None
 
-print(get_metal_data())
 
 def update_all_assets(asset_list):
     """The Master Fetcher: Loops through objects and updates them."""
     for asset in asset_list:
         try:
-            # We check class names as strings to avoid importing models.py
             asset_type = asset.__class__.__name__
             
             if asset_type == "Stock":
@@ -61,9 +64,17 @@ def update_all_assets(asset_list):
             else:
                 data = None
 
-            if data:
+            if data and data.get('price'):
                 asset.update_price(data['price'])
-                print(f"Successfully updated {asset.name} to {data['price']} {data['currency']}")
+                print(f"Updated {asset.name} to {data['price']} {data.get('currency', 'USD')}")
+            else:
+                print(f"Warning: No valid data for {asset.symbol}")
                 
         except Exception as e:
             print(f"Could not update {asset.symbol}: {e}")
+
+if __name__ == "__main__":
+    # Test cases
+    print("Testing fetchers...")
+    print(get_stock_data("AMZN"))
+    print(get_metal_data("XAU"))
