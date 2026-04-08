@@ -18,7 +18,7 @@ def get_stock_data(ticker_symbol):
     "change": raw_data.get("regularMarketChangePercent")
 }
     return clean_data
-print(get_stock_data("AMZN"))
+
 
 
 def get_metal_data(symbol="XAU"):
@@ -45,7 +45,7 @@ def get_metal_data(symbol="XAU"):
     except requests.exceptions.RequestException as e:
         print("Error:", str(e))
 
-print(get_metal_data())
+
 
 def update_all_assets(asset_list):
     """The Master Fetcher: Loops through objects and updates them."""
