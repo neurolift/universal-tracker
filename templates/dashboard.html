@@ -1,0 +1,376 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Oracle Finance | Portfolio Dashboard</title>
+<!-- Fonts -->
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;family=Manrope:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet"/>
+<!-- Material Symbols -->
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<!-- Tailwind CSS -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "on-secondary": "#ffffff",
+                    "on-primary-fixed": "#0f0069",
+                    "tertiary": "#470005",
+                    "secondary-fixed": "#6ffbbe",
+                    "on-surface-variant": "#46464d",
+                    "outline": "#77767e",
+                    "inverse-surface": "#2d3133",
+                    "surface-dim": "#d8dadc",
+                    "on-secondary-fixed-variant": "#005236",
+                    "surface-container-highest": "#e0e3e5",
+                    "on-primary-container": "#9390ff",
+                    "surface-variant": "#e0e3e5",
+                    "on-secondary-container": "#00714d",
+                    "surface-tint": "#544fc0",
+                    "on-error": "#ffffff",
+                    "inverse-on-surface": "#eff1f3",
+                    "secondary-fixed-dim": "#4edea3",
+                    "on-tertiary": "#ffffff",
+                    "surface-container-high": "#e6e8ea",
+                    "on-primary-fixed-variant": "#3b35a7",
+                    "on-surface": "#191c1e",
+                    "primary-container": "#271c94",
+                    "surface-container-lowest": "#ffffff",
+                    "secondary-container": "#6cf8bb",
+                    "primary": "#120073",
+                    "on-primary": "#ffffff",
+                    "tertiary-container": "#6f000c",
+                    "primary-fixed": "#e2dfff",
+                    "background": "#f7f9fb",
+                    "on-tertiary-fixed": "#410004",
+                    "on-secondary-fixed": "#002113",
+                    "surface": "#f7f9fb",
+                    "on-tertiary-fixed-variant": "#930013",
+                    "on-error-container": "#93000a",
+                    "primary-fixed-dim": "#c3c0ff",
+                    "error": "#ba1a1a",
+                    "inverse-primary": "#c3c0ff",
+                    "surface-bright": "#f7f9fb",
+                    "outline-variant": "#c7c5ce",
+                    "tertiary-fixed": "#ffdad7",
+                    "error-container": "#ffdad6",
+                    "tertiary-fixed-dim": "#ffb3ad",
+                    "secondary": "#006c49",
+                    "on-background": "#191c1e",
+                    "surface-container": "#eceef0",
+                    "surface-container-low": "#f2f4f6",
+                    "on-tertiary-container": "#ff6e68"
+            },
+            "borderRadius": {
+                    "DEFAULT": "0.25rem",
+                    "lg": "0.5rem",
+                    "xl": "1.5rem",
+                    "full": "9999px"
+            },
+            "fontFamily": {
+                    "headline": ["Manrope"],
+                    "body": ["Inter"],
+                    "label": ["Inter"]
+            }
+          },
+        },
+      }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+            display: inline-block;
+            vertical-align: middle;
+        }
+        body { font-family: 'Inter', sans-serif; }
+        h1, h2, h3 { font-family: 'Manrope', sans-serif; }
+    </style>
+</head>
+<body class="bg-surface text-on-surface min-h-screen flex flex-col">
+<!-- TopNavBar -->
+<nav class="fixed top-0 w-full z-50 bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl shadow-sm shadow-indigo-900/5">
+<div class="flex justify-between items-center px-8 py-4 w-full max-w-[1920px] mx-auto">
+<div class="flex items-center gap-8">
+<span class="text-2xl font-black tracking-tighter text-indigo-950 dark:text-white" >TRACKER</span>
+<!-- Search Bar -->
+<div class="hidden md:flex items-center bg-surface-container-high px-4 py-2 rounded-full w-96 gap-3">
+<span class="material-symbols-outlined text-on-surface-variant" >search</span>
+<input class="bg-transparent border-none focus:ring-0 text-sm font-medium w-full placeholder:text-on-surface-variant" placeholder="Search stocks or tickers (e.g. 'NABIL', 'Apple')" type="text"/>
+</div>
+</div>
+<div class="flex items-center gap-4">
+<button class="p-2 text-slate-500 hover:bg-slate-50 transition-colors rounded-full active:scale-95 duration-200" >
+<span class="material-symbols-outlined" >notifications</span>
+</button>
+<button class="p-2 text-slate-500 hover:bg-slate-50 transition-colors rounded-full active:scale-95 duration-200" >
+<span class="material-symbols-outlined" >account_balance_wallet</span>
+</button>
+{% set user_name = session.get('user_name', 'Investor') %}
+{% set user_email = session.get('user_email', 'investor@example.com') %}
+{% set initials = (user_name[:1] if user_name else 'I') | upper %}
+<div class="relative">
+<button aria-expanded="false" aria-haspopup="true" class="h-10 w-10 rounded-full bg-indigo-100 text-indigo-800 font-bold flex items-center justify-center border border-indigo-200 hover:bg-indigo-200 transition-colors" id="user-menu-button" type="button">
+{{ initials }}
+</button>
+<div class="hidden absolute right-0 mt-3 w-64 bg-white border border-slate-200 rounded-xl shadow-lg p-2 z-50" id="user-menu" role="menu">
+<div class="px-3 py-2 border-b border-slate-100">
+<p class="text-sm font-semibold text-slate-800">{{ user_name }}</p>
+<p class="text-xs text-slate-500 truncate">{{ user_email }}</p>
+</div>
+<a class="mt-2 flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-semibold text-red-600 hover:bg-red-50 transition-colors" href="{{ url_for('logout') }}" role="menuitem">
+<span class="material-symbols-outlined text-[18px]">logout</span>
+Sign Out
+</a>
+</div>
+</div>
+</div>
+</div>
+</nav>
+<div class="flex flex-1 pt-16">
+<!-- SideNavBar -->
+<aside class="fixed left-0 top-16 h-full w-64 bg-slate-50 dark:bg-slate-950 flex flex-col p-6 gap-2">
+<div class="mb-6 px-2">
+<h3 class="font-manrope text-sm font-bold text-indigo-900 dark:text-indigo-400 uppercase tracking-widest" >Main Portfolio</h3>
+<p class="text-xs text-slate-500" ><br/></p>
+</div>
+<nav class="flex flex-col gap-1">
+<a class="flex items-center gap-3 px-4 py-3 bg-white dark:bg-slate-900 text-indigo-900 dark:text-white shadow-sm rounded-xl font-manrope text-sm font-semibold transition-transform hover:translate-x-1 duration-150" href="#" >
+<span class="material-symbols-outlined" >dashboard</span>
+                    Overview
+                </a>
+<a class="flex items-center gap-3 px-4 py-3 text-slate-500 dark:text-slate-400 hover:text-indigo-700 font-manrope text-sm font-semibold transition-transform hover:translate-x-1 duration-150" href="#" >
+<span class="material-symbols-outlined" >show_chart</span>
+                    Performance
+                </a>
+<a class="flex items-center gap-3 px-4 py-3 text-slate-500 dark:text-slate-400 hover:text-indigo-700 font-manrope text-sm font-semibold transition-transform hover:translate-x-1 duration-150" href="#" >
+<span class="material-symbols-outlined" >pie_chart</span>
+                    Holdings
+                </a>
+<a class="flex items-center gap-3 px-4 py-3 text-slate-500 dark:text-slate-400 hover:text-indigo-700 font-manrope text-sm font-semibold transition-transform hover:translate-x-1 duration-150" href="#" >
+<span class="material-symbols-outlined" >history</span>
+                    History
+                </a>
+<a class="flex items-center gap-3 px-4 py-3 text-slate-500 dark:text-slate-400 hover:text-indigo-700 font-manrope text-sm font-semibold transition-transform hover:translate-x-1 duration-150" href="#" >
+<span class="material-symbols-outlined" >payments</span>
+                    Dividends
+                </a>
+</nav>
+<button class="mt-8 bg-indigo-900 text-white rounded-xl py-3 px-4 flex items-center justify-center gap-2 font-manrope text-sm font-bold hover:bg-indigo-950 transition-colors shadow-lg shadow-indigo-900/10" >
+<span class="material-symbols-outlined text-sm" >add</span>
+                Add Asset
+            </button>
+<div class="mt-auto flex flex-col gap-1">
+<a class="flex items-center gap-3 px-4 py-3 text-slate-500 dark:text-slate-400 hover:text-indigo-700 font-manrope text-sm font-semibold" href="#" >
+<span class="material-symbols-outlined" >settings</span>
+                    Settings
+                </a>
+<a class="flex items-center gap-3 px-4 py-3 text-slate-500 dark:text-slate-400 hover:text-indigo-700 font-manrope text-sm font-semibold" href="#" >
+<span class="material-symbols-outlined" >help</span>
+                    Support
+                </a>
+</div>
+</aside>
+<!-- Main Content Canvas -->
+<main class="ml-64 flex-1 p-10">
+<!-- Portfolio Header Section -->
+<header class="flex justify-between items-end mb-10">
+<div>
+<h1 class="text-4xl font-extrabold tracking-tight text-on-surface mb-2" >Portfolio Overview</h1>
+<p class="text-on-surface-variant font-medium" >Monitoring {{ asset_count }} active assets in your main investment account.</p>
+</div>
+<div class="flex gap-3">
+<button class="bg-surface-container-high text-on-surface px-6 py-3 rounded-xl font-semibold text-sm hover:bg-surface-container-highest transition-colors flex items-center gap-2" >
+<span class="material-symbols-outlined text-lg" >analytics</span>
+                        Analyze Risk
+                    </button>
+<button class="bg-surface-container-high text-on-surface px-6 py-3 rounded-xl font-semibold text-sm hover:bg-surface-container-highest transition-colors flex items-center gap-2" >
+<span class="material-symbols-outlined text-lg" >file_download</span>
+                        Export Report
+                    </button>
+<button class="bg-gradient-to-br from-primary to-primary-container text-white px-8 py-3 rounded-xl font-bold text-sm shadow-xl shadow-primary/20 flex items-center gap-2 hover:opacity-90 transition-opacity" >
+<span class="material-symbols-outlined text-lg" >add_circle</span>
+                        Quick Add
+                    </button>
+</div>
+</header>
+<!-- Summary Cards Bento Grid -->
+<section class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-10">
+<!-- Total Value Card -->
+<div class="bg-surface-container-lowest p-8 rounded-xl flex flex-col justify-between group transition-all hover:translate-y-[-4px]">
+<div>
+<div class="flex justify-between items-start mb-6">
+<span class="text-on-surface-variant text-sm font-semibold tracking-wider uppercase" >Total Assets Value</span>
+<span class="p-2 bg-primary-fixed rounded-lg text-primary">
+<span class="material-symbols-outlined" >account_balance</span>
+</span>
+</div>
+<h2 class="text-5xl font-black tracking-tighter text-primary mb-2" >${{ '%.2f'|format(total_value) }}</h2>
+<div class="flex items-center gap-2 text-secondary font-bold text-sm">
+<span class="material-symbols-outlined text-sm" >trending_up</span>
+<span class="" >Live from internal asset store</span>
+</div>
+</div>
+<div class="mt-8 h-12 w-full overflow-hidden opacity-30">
+<svg class="w-full h-full stroke-primary fill-none stroke-[2]" viewbox="0 0 100 20">
+<path d="M0 20 Q 25 5, 50 15 T 100 5"></path>
+</svg>
+</div>
+</div>
+<!-- Day Change Card -->
+<div class="bg-surface-container-lowest p-8 rounded-xl flex flex-col justify-between group transition-all hover:translate-y-[-4px]">
+<div>
+<div class="flex justify-between items-start mb-6">
+<span class="text-on-surface-variant text-sm font-semibold tracking-wider uppercase" >vToday's Performance</span>
+<span class="p-2 bg-secondary-container rounded-lg text-secondary">
+<span class="material-symbols-outlined" >bolt</span>
+</span>
+</div>
+<h2 class="text-5xl font-black tracking-tighter text-secondary mb-2" >+$8,241.10</h2>
+<div class="flex items-center gap-2 text-secondary font-bold text-sm bg-secondary-container/30 px-3 py-1 rounded-full w-fit">
+<span class="material-symbols-outlined text-sm" >north_east</span>
+<span class="" >+1.96%</span>
+</div>
+</div>
+<div class="mt-8 h-12 w-full overflow-hidden opacity-40">
+<svg class="w-full h-full stroke-secondary fill-none stroke-[2]" viewbox="0 0 100 20">
+<path d="M0 15 Q 15 18, 30 10 T 60 5 T 100 2"></path>
+</svg>
+</div>
+</div>
+<!-- Total P/L Card -->
+<div class="bg-surface-container-lowest p-8 rounded-xl flex flex-col justify-between group transition-all hover:translate-y-[-4px]">
+<div>
+<div class="flex justify-between items-start mb-6">
+<span class="text-on-surface-variant text-sm font-semibold tracking-wider uppercase" >Unrealized P/L</span>
+<span class="p-2 bg-tertiary-fixed rounded-lg text-tertiary">
+<span class="material-symbols-outlined" >monitoring</span>
+</span>
+</div>
+<h2 class="text-5xl font-black tracking-tighter text-on-surface mb-2" >+$142.3k</h2>
+<div class="flex items-center gap-2 text-on-surface-variant font-medium text-sm">
+<span class="material-symbols-outlined text-sm" >history</span>
+<span class="" >Since inception (Oct 2021)</span>
+</div>
+</div>
+<div class="mt-8 flex gap-1 items-end">
+<div class="w-1/12 bg-slate-200 h-8 rounded-t"></div>
+<div class="w-1/12 bg-slate-200 h-10 rounded-t"></div>
+<div class="w-1/12 bg-slate-200 h-6 rounded-t"></div>
+<div class="w-1/12 bg-secondary h-12 rounded-t"></div>
+<div class="w-1/12 bg-secondary h-16 rounded-t"></div>
+<div class="w-1/12 bg-secondary h-14 rounded-t"></div>
+<div class="w-1/12 bg-secondary h-20 rounded-t"></div>
+</div>
+</div>
+</section>
+<!-- Holdings Table Section -->
+<section class="bg-white rounded-xl shadow-sm overflow-hidden">
+<div class="px-8 py-6 flex justify-between items-center bg-surface-container-low">
+<h3 class="text-xl font-bold text-on-surface" >Current Holdings</h3>
+<div class="flex items-center gap-2">
+<span class="text-xs font-bold text-on-surface-variant uppercase tracking-tighter" >View:</span>
+<select class="bg-transparent border-none text-sm font-bold focus:ring-0 cursor-pointer">
+<option>Standard View</option>
+<option>Detailed Financials</option>
+<option>Performance Only</option>
+</select>
+</div>
+</div>
+<div class="overflow-x-auto">
+<table class="w-full text-left border-collapse">
+<thead>
+<tr class="bg-surface-container-low/50">
+<th class="px-8 py-4 text-xs font-bold text-slate-500 uppercase tracking-widest" >Asset</th>
+<th class="px-6 py-4 text-xs font-bold text-slate-500 uppercase tracking-widest" >Type</th>
+<th class="px-6 py-4 text-xs font-bold text-slate-500 uppercase tracking-widest" >Source</th>
+<th class="px-8 py-4 text-xs font-bold text-slate-500 uppercase tracking-widest text-right" >Current Price (USD)</th>
+</tr>
+</thead>
+<tbody class="divide-y divide-slate-100">
+{% if assets %}
+{% for asset in assets %}
+<tr class="hover:bg-slate-50 transition-colors">
+<td class="px-8 py-5" >
+<div class="flex items-center gap-4">
+<div class="w-10 h-10 rounded-full bg-slate-100 flex items-center justify-center font-bold text-indigo-900" >{{ asset.symbol }}</div>
+<div>
+<div class="font-bold text-on-surface" >{{ asset.name }}</div>
+<div class="text-xs text-on-surface-variant" >{{ asset.symbol }}</div>
+</div>
+</div>
+</td>
+<td class="px-6 py-5 text-sm font-semibold text-on-surface-variant" >{{ asset.type }}</td>
+<td class="px-6 py-5 text-sm text-on-surface-variant" >{{ asset.extra_info or '-' }}</td>
+<td class="px-8 py-5 text-right font-bold text-primary" >${{ '%.2f'|format(asset.price) }}</td>
+</tr>
+{% endfor %}
+{% else %}
+<tr>
+<td class="px-8 py-8 text-sm text-on-surface-variant" colspan="4">No assets found yet. Use refresh from the app flow to pull prices.</td>
+</tr>
+{% endif %}
+</tbody>
+</table>
+</div>
+</section>
+</main>
+</div>
+<!-- Footer -->
+<footer class="w-full py-12 mt-auto bg-white dark:bg-slate-900 border-t border-slate-100 dark:border-slate-800">
+<div class="flex flex-col items-center gap-4 px-8 text-center">
+<div class="flex gap-8 mb-4">
+<a class="text-slate-400 dark:text-slate-500 font-inter text-xs tracking-wide hover:underline opacity-80 hover:opacity-100" href="#" >Privacy Policy</a>
+<a class="text-slate-400 dark:text-slate-500 font-inter text-xs tracking-wide hover:underline opacity-80 hover:opacity-100" href="#" >Terms of Service</a>
+<a class="text-slate-400 dark:text-slate-500 font-inter text-xs tracking-wide hover:underline opacity-80 hover:opacity-100" href="#" >SEC Disclosures</a>
+<a class="text-slate-400 dark:text-slate-500 font-inter text-xs tracking-wide hover:underline opacity-80 hover:opacity-100" href="#" >Contact</a>
+</div>
+<p class="font-inter text-xs tracking-wide text-slate-400 dark:text-slate-500 max-w-2xl">
+                © 2024 The Digital Oracle. All market data is delayed by 15 minutes. Financial advice not included. Oracle Finance is a platform for portfolio tracking and data visualization. Always consult with a certified financial advisor before making investment decisions.
+            </p>
+</div>
+</footer>
+<script>
+    (function () {
+        const menuButton = document.getElementById('user-menu-button');
+        const menu = document.getElementById('user-menu');
+
+        if (!menuButton || !menu) {
+            return;
+        }
+
+        function closeMenu() {
+            menu.classList.add('hidden');
+            menuButton.setAttribute('aria-expanded', 'false');
+        }
+
+        menuButton.addEventListener('click', function (event) {
+            event.stopPropagation();
+            const isHidden = menu.classList.contains('hidden');
+            if (isHidden) {
+                menu.classList.remove('hidden');
+                menuButton.setAttribute('aria-expanded', 'true');
+            } else {
+                closeMenu();
+            }
+        });
+
+        document.addEventListener('click', function (event) {
+            if (!menu.contains(event.target) && !menuButton.contains(event.target)) {
+                closeMenu();
+            }
+        });
+
+        document.addEventListener('keydown', function (event) {
+            if (event.key === 'Escape') {
+                closeMenu();
+            }
+        });
+    })();
+</script>
+</body></html>

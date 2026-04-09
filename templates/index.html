@@ -107,7 +107,14 @@
 <input class="bg-surface-container-high border-none rounded-full py-2 pl-10 pr-4 text-sm focus:ring-2 focus:ring-primary/20 w-64" placeholder="Search markets..." type="text"/>
 </div>
 <button class="material-symbols-outlined text-on-surface-variant hover:text-primary transition-all">notifications</button>
-<a class="text-primary font-manrope font-bold text-sm hover:text-[#271c94] transition-colors duration-200 px-2 py-1" href="/login">Sign In</a>
+{% if session.get('user_id') %}
+<a class="inline-flex items-center gap-1.5 text-on-surface-variant hover:text-primary transition-colors duration-200 font-manrope font-semibold text-sm px-2 py-1" href="{{ url_for('dashboard') }}">
+<span class="material-symbols-outlined text-[20px]">dashboard</span>
+<span>Dashboard</span>
+</a>
+{% else %}
+<a class="text-primary font-manrope font-bold text-sm hover:text-[#271c94] transition-colors duration-200 px-2 py-1" href="{{ url_for('login') }}">Sign In</a>
+{% endif %}
 </div>
 </div>
 </nav>
@@ -206,8 +213,8 @@
 <span class="material-symbols-outlined text-secondary text-sm" style="font-variation-settings: 'FILL' 1;">trending_up</span>
 </div>
 <div class="flex justify-between items-end">
-<p class="text-2xl font-bold font-manrope" data-stock-price="AAPL" data-base-price="189.43">$189.43</p>
-<span class="bg-secondary-container text-on-secondary-container px-2 py-1 rounded-full text-xs font-bold" data-stock-change="AAPL" data-base-change="1.24">+1.24%</span>
+<p class="text-2xl font-bold font-manrope" data-live-price="AAPL">${{ '%.2f'|format(asset_prices.get('AAPL', 189.43)) }}</p>
+<span class="bg-secondary-container text-on-secondary-container px-2 py-1 rounded-full text-xs font-bold" data-live-change="AAPL">LIVE</span>
 </div>
 </div>
 <!-- Ticker 2 -->
@@ -223,8 +230,8 @@
 <span class="material-symbols-outlined text-secondary text-sm" style="font-variation-settings: 'FILL' 1;">trending_up</span>
 </div>
 <div class="flex justify-between items-end">
-<p class="text-2xl font-bold font-manrope" data-stock-price="NVDA" data-base-price="942.89">$942.89</p>
-<span class="bg-secondary-container text-on-secondary-container px-2 py-1 rounded-full text-xs font-bold" data-stock-change="NVDA" data-base-change="3.82">+3.82%</span>
+<p class="text-2xl font-bold font-manrope" data-live-price="NVDA">${{ '%.2f'|format(asset_prices.get('NVDA', 942.89)) }}</p>
+<span class="bg-secondary-container text-on-secondary-container px-2 py-1 rounded-full text-xs font-bold" data-live-change="NVDA">LIVE</span>
 </div>
 </div>
 <!-- Ticker 3 -->
@@ -240,8 +247,8 @@
 <span class="material-symbols-outlined text-tertiary-container text-sm" style="font-variation-settings: 'FILL' 1;">trending_down</span>
 </div>
 <div class="flex justify-between items-end">
-<p class="text-2xl font-bold font-manrope" data-stock-price="TSLA" data-base-price="171.05">$171.05</p>
-<span class="bg-tertiary-container text-on-tertiary-container px-2 py-1 rounded-full text-xs font-bold" data-stock-change="TSLA" data-base-change="-0.45">-0.45%</span>
+<p class="text-2xl font-bold font-manrope" data-live-price="TSLA">${{ '%.2f'|format(asset_prices.get('TSLA', 171.05)) }}</p>
+<span class="bg-tertiary-container text-on-tertiary-container px-2 py-1 rounded-full text-xs font-bold" data-live-change="TSLA">LIVE</span>
 </div>
 </div>
 <!-- Ticker 4 -->
@@ -257,8 +264,8 @@
 <span class="material-symbols-outlined text-secondary text-sm" style="font-variation-settings: 'FILL' 1;">trending_up</span>
 </div>
 <div class="flex justify-between items-end">
-<p class="text-2xl font-bold font-manrope" data-stock-price="MSFT" data-base-price="415.10">$415.10</p>
-<span class="bg-secondary-container text-on-secondary-container px-2 py-1 rounded-full text-xs font-bold" data-stock-change="MSFT" data-base-change="0.88">+0.88%</span>
+<p class="text-2xl font-bold font-manrope" data-live-price="MSFT">${{ '%.2f'|format(asset_prices.get('MSFT', 415.10)) }}</p>
+<span class="bg-secondary-container text-on-secondary-container px-2 py-1 rounded-full text-xs font-bold" data-live-change="MSFT">LIVE</span>
 </div>
 </div>
 </div>
@@ -339,49 +346,49 @@
 </div>
 </div>
 </footer>
-<script> //Adds random drift value to the stock price and % (only for now)
+<script>
     (function () {
-        const prices = new Map();
-
         function formatPrice(value) {
-            return `$${value.toFixed(2)}`;
+            return `$${Number(value).toFixed(2)}`;
         }
 
         function formatChange(value) {
-            const prefix = value >= 0 ? '+' : '';
-            return `${prefix}${value.toFixed(2)}%`;
+            const number = Number(value || 0);
+            const prefix = number >= 0 ? '+' : '';
+            return `${prefix}${number.toFixed(2)}%`;
         }
 
-        function applyPriceUpdate(symbol, priceElement, changeElement) {
-            const basePrice = Number(priceElement.dataset.basePrice || 0);
-            const currentPrice = prices.has(symbol) ? prices.get(symbol) : basePrice;
-            const drift = (Math.random() - 0.5) * 0.8;
-            const nextPrice = Math.max(0.01, currentPrice + drift);
-            const baseChange = Number(changeElement.dataset.baseChange || 0);
-            const currentChange = baseChange + ((nextPrice - basePrice) / basePrice) * 100;
-
-            prices.set(symbol, nextPrice);
-            priceElement.textContent = formatPrice(nextPrice);
-            changeElement.textContent = formatChange(currentChange);
-
-            const isPositive = currentChange >= 0;
-            changeElement.className = isPositive
-                ? 'bg-secondary-container text-on-secondary-container px-2 py-1 rounded-full text-xs font-bold'
-                : 'bg-tertiary-container text-on-tertiary-container px-2 py-1 rounded-full text-xs font-bold';
-        }
-
-        function refreshTickers() {
-            document.querySelectorAll('[data-stock-price]').forEach((priceElement) => {
-                const symbol = priceElement.dataset.stockPrice;
-                const changeElement = document.querySelector(`[data-stock-change="${symbol}"]`);
-                if (changeElement) {
-                    applyPriceUpdate(symbol, priceElement, changeElement);
+        async function refreshTickers() {
+            try {
+                const response = await fetch('/api/prices', { credentials: 'same-origin' });
+                if (!response.ok) {
+                    return;
                 }
-            });
+
+                const payload = await response.json();
+                (payload.assets || []).forEach((asset) => {
+                    const priceElement = document.querySelector(`[data-live-price="${asset.symbol}"]`);
+                    const changeElement = document.querySelector(`[data-live-change="${asset.symbol}"]`);
+
+                    if (priceElement) {
+                        priceElement.textContent = formatPrice(asset.price);
+                    }
+
+                    if (changeElement) {
+                        const isPositive = Number(asset.change_pct || 0) >= 0;
+                        changeElement.textContent = formatChange(asset.change_pct || 0);
+                        changeElement.className = isPositive
+                            ? 'bg-secondary-container text-on-secondary-container px-2 py-1 rounded-full text-xs font-bold'
+                            : 'bg-tertiary-container text-on-tertiary-container px-2 py-1 rounded-full text-xs font-bold';
+                    }
+                });
+            } catch (error) {
+                // Keep previously rendered prices if API call fails.
+            }
         }
 
         refreshTickers();
-        setInterval(refreshTickers, 3000);
+        setInterval(refreshTickers, 15000);
     })();
 </script>
 <!-- SideNavBar (Mobile Bottom Navigation logic applied for UX) -->
