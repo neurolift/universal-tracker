@@ -7,6 +7,24 @@ load_dotenv(dotenv_path=os.path.join(os.path.dirname(__file__), "..", ".env"))
 
 api_key = os.getenv("GOLD_API_KEY")
 
+
+def _get_gold_price_from_yfinance():
+    """Fallback source for gold spot/futures when GoldAPI is unavailable."""
+    ticker = yf.Ticker("GC=F")
+    raw_data = ticker.info
+    price = raw_data.get("currentPrice") or raw_data.get("regularMarketPrice")
+
+    if price is None:
+        return None
+
+    return {
+        "symbol": "XAU",
+        "name": "Gold",
+        "price": price,
+        "currency": raw_data.get("currency", "USD"),
+        "change": raw_data.get("regularMarketChangePercent"),
+    }
+
 def get_stock_data(ticker_symbol):
     stock=yf.Ticker(ticker_symbol)
     raw_data=stock.info
@@ -18,10 +36,12 @@ def get_stock_data(ticker_symbol):
     "change": raw_data.get("regularMarketChangePercent")
 }
     return clean_data
-print(get_stock_data("AMZN"))
 
 
 def get_metal_data(symbol="XAU"):
+
+    if not api_key:
+        return _get_gold_price_from_yfinance()
 
     url = f"https://www.goldapi.io/api/{symbol}/USD"
     
@@ -43,9 +63,8 @@ def get_metal_data(symbol="XAU"):
             "change": result.get("chp")
                 }
     except requests.exceptions.RequestException as e:
-        print("Error:", str(e))
-
-print(get_metal_data())
+            print("GoldAPI request failed, falling back to yfinance:", str(e))
+            return _get_gold_price_from_yfinance()
 
 def update_all_assets(asset_list):
     """The Master Fetcher: Loops through objects and updates them."""

@@ -1,5 +1,4 @@
 import sqlite3
-import os
 
 DB_NAME = "portfolio.db"
 
@@ -30,5 +29,18 @@ def save_asset(asset_obj):
 def load_assets():
     with sqlite3.connect(DB_NAME) as conn:
         curr = conn.cursor()
-        curr.execute("SELECT * FROM assets")
-        return curr.fetchall()
+        curr.execute("SELECT symbol, name, asset_type, price, extra_info FROM assets ORDER BY name")
+        rows = curr.fetchall()
+
+    assets = []
+    for symbol, name, asset_type, price, extra_info in rows:
+        assets.append(
+            {
+                "symbol": symbol,
+                "name": name,
+                "type": asset_type,
+                "price": float(price or 0.0),
+                "extra_info": extra_info or "",
+            }
+        )
+    return assets
