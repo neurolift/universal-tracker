@@ -19,7 +19,7 @@ def create_table():
 def save_asset(asset_obj):
     with sqlite3.connect(DB_NAME) as conn:
         curr = conn.cursor()
-        extra = asset_obj.get_extra_info()
+        extra=getattr(asset_obj,'exchange',getattr(asset_obj,'purity',""))
         curr.execute('''
             INSERT OR REPLACE INTO assets (symbol, name, asset_type, price, extra_info)
             VALUES (?, ?, ?, ?, ?)

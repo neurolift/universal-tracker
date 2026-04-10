@@ -1,0 +1,14 @@
+{
+  "stocks": [
+    { "name": "Apple Inc.", "symbol": "AAPL", "exchange": "NASDAQ" },
+    { "name": "Microsoft Corporation", "symbol": "MSFT", "exchange": "NASDAQ" },
+    { "name": "Amazon.com, Inc.", "symbol": "AMZN", "exchange": "NASDAQ" },
+    { "name": "Tesla, Inc.", "symbol": "TSLA", "exchange": "NASDAQ" },
+    { "name": "NVIDIA Corporation", "symbol": "NVDA", "exchange": "NASDAQ" },
+    { "name": "Alphabet Inc. Class A", "symbol": "GOOGL", "exchange": "NASDAQ" },
+    { "name": "Alphabet Inc. Class C", "symbol": "GOOG", "exchange": "NASDAQ" },
+    { "name": "Meta Platforms, Inc.", "symbol": "META", "exchange": "NASDAQ" },
+    { "name": "Johnson & Johnson", "symbol": "JNJ", "exchange": "NYSE" },
+    { "name": "Visa Inc.", "symbol": "V", "exchange": "NYSE" }
+  ]
+}
